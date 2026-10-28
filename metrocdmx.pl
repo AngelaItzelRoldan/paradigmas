@@ -15,7 +15,7 @@ arista(candelaria,san_lazaro, l1, 1).
 arista(san_lazaro, moctezuma, l1, 1).
 arista(moctezuma, balbuena, l1, 1).
 arista(balbuena, boulevard_pto_aereo, l1, 1).
-arista(bouelvard_pto_aereo, gomez_farias, l1, 1).
+arista(boulevard_pto_aereo, gomez_farias, l1, 1).
 arista(gomez_farias, zaragoza, l1, 1).
 arista(zaragoza, pantitla, l1, 1).
 
@@ -286,4 +286,46 @@ mejor_camino(Origen, Destino, LineaInicial, Mejor) :-
     findall(Costo-Ruta, ruta_final(Origen, Destino, [Origen], Ruta, LineaInicial, 0, Costo) , Mejor_camino), 
     min_member(Mejor,Mejor_camino).
 
-    
+% para ver cuales estan al rededor de la linea, transbordos 
+
+lineas_de(Estacion, Lineas) :-
+    findall(L , conexion(Estacion,_,L,_), Repetidas),
+    sort(Repetidas, Lineas).
+
+% mejor viaje
+
+mejor_viaje(Origen, Destino, Mejor) :-
+    lineas_de(Origen, Lineas), 
+    findall(Resultado, (member(Linea, Lineas), mejor_camino(Origen,Destino,Linea,Resultado)), Todas), 
+    min_member(Mejor, Todas).
+
+% a que linea pertenece
+estaciones_de(Linea, Estaciones) :-
+    findall(E, (arista(E,_,Linea,_) ; arista(_,E,Linea,_)), L),
+    sort(L, Estaciones).
+
+
+num_estaciones(Linea, N) :- estaciones_de(Linea, Es), length(Es, N).
+
+% tiene transbordo
+
+es_transbordo(E) :- lineas_de(E, L), length(L, N), N > 1.
+
+transbordo_entre(L1, L2, E) :-
+    transbordo(E, Ls, _), member(L1, Ls), member(L2, Ls), L1 \== L2.
+
+% viaje directo
+viaje_directo(O, D, L) :-
+    lineas_de(O, Lo), lineas_de(D, Ld), member(L, Lo), member(L, Ld), O \== D.
+
+% terminales de las lineas
+terminal(E, L) :-
+    estaciones_de(L, Es), member(E, Es),
+    findall(V, conexion(E, V, L, _), Vs), length(Vs, 1).
+
+% linea mas larga
+
+linea_mas_larga(L) :-
+    findall(L0, arista(_,_,L0,_), Ls0), sort(Ls0, Ls),
+    findall(N-Li, (member(Li, Ls), num_estaciones(Li, N)), Pares),
+    max_member(_-L, Pares).
