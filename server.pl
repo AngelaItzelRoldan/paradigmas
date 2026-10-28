@@ -7,7 +7,7 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_files)).
 
-:- consult('metrocdmx.pl').   % ojo: mismo nombre exacto que el archivo (Linux distingue mayusculas)
+:- consult('metrocdmx.pl').   
 
 :- http_handler('/', http_reply_file('web/index.html', []), []).
 :- http_handler('/api/estaciones', api_estaciones, []).
